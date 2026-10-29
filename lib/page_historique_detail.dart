@@ -250,16 +250,17 @@ class _PageHistoriqueDetailState extends State<PageHistoriqueDetail> {
           ),
           TextButton(
             onPressed: () async {
+              final navigator = Navigator.of(ctx);
               try {
                 await DatabaseHelper.instance
                     .supprimerTravail(widget.table, item['id']);
+                navigator.pop();
                 if (mounted) {
-                  Navigator.pop(ctx);
                   _recharger(); // Recharge les données — liste mise à jour
                 }
               } catch (e) {
+                navigator.pop();
                 if (mounted) {
-                  Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text("Erreur suppression : $e"),
                     backgroundColor: Colors.red,

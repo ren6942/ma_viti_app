@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'database_helper.dart';
 import 'produit_service.dart';
 import 'package:intl/intl.dart';
@@ -40,8 +39,8 @@ class _SulfatagePageState extends State<SulfatagePage> {
   ];
 
   List<String> _parcellesSelectionnees = [];
-  List<String> _produitsSelectionnes = [];
-  List<String> _parasitesSelectionnes = [];
+  final List<String> _produitsSelectionnes = [];
+  final List<String> _parasitesSelectionnes = [];
 
   @override
   void initState() {
@@ -297,37 +296,31 @@ class _SulfatagePageState extends State<SulfatagePage> {
                         ))
                     .toList(),
               ),
-              ..._produitsSelectionnes
-                  .map((p) => Padding(
-                        padding: const EdgeInsets.only(top: 10),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: Text(p,
-                                  style:
-                                      const TextStyle(color: Colors.white70)),
-                            ),
-                            Expanded(
-                              flex: 3,
-                              child: TextFormField(
-                                controller: _dosesProduitsControllers[p],
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                style: const TextStyle(
-                                    color: Colors.white, fontSize: 14),
-                                decoration:
-                                    _inputDecoration("Dose (kg ou L / ha)"),
-                                validator: (v) => (v == null || v.isEmpty)
-                                    ? "Obligatoire"
-                                    : null,
-                              ),
-                            ),
-                          ],
+              ..._produitsSelectionnes.map((p) => Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: Text(p,
+                              style: const TextStyle(color: Colors.white70)),
                         ),
-                      ))
-                  .toList(),
+                        Expanded(
+                          flex: 3,
+                          child: TextFormField(
+                            controller: _dosesProduitsControllers[p],
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 14),
+                            decoration: _inputDecoration("Dose (kg ou L / ha)"),
+                            validator: (v) =>
+                                (v == null || v.isEmpty) ? "Obligatoire" : null,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )),
               const SizedBox(height: 25),
 
               // --- VOLUME DE BOUILLIE ---
@@ -383,10 +376,10 @@ class _SulfatagePageState extends State<SulfatagePage> {
                     lastDate: DateTime(annee + 2),
                     builder: (context, child) => Theme(
                       data: Theme.of(context).copyWith(
-                        colorScheme: ColorScheme.dark(
-                          primary: const Color(0xff76ff03),
+                        colorScheme: const ColorScheme.dark(
+                          primary: Color(0xff76ff03),
                           onPrimary: Colors.black,
-                          surface: const Color(0xFF1E1E1E),
+                          surface: Color(0xFF1E1E1E),
                         ),
                       ),
                       child: child!,
@@ -453,8 +446,9 @@ class _SulfatagePageState extends State<SulfatagePage> {
           ),
           TextButton(
             onPressed: () async {
+              final navigator = Navigator.of(ctx);
               await _ajouterProduitALaBase();
-              if (mounted) Navigator.pop(ctx);
+              navigator.pop();
             },
             child: const Text("AJOUTER",
                 style: TextStyle(color: Color(0xff76ff03))),

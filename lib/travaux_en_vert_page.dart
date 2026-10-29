@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:slider_button/slider_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
@@ -281,10 +280,10 @@ class _TravauxVertsPageState extends State<TravauxVertsPage> {
                   lastDate: DateTime(annee + 2),
                   builder: (context, child) => Theme(
                     data: Theme.of(context).copyWith(
-                      colorScheme: ColorScheme.dark(
-                        primary: const Color(0xff76ff03),
+                      colorScheme: const ColorScheme.dark(
+                        primary: Color(0xff76ff03),
                         onPrimary: Colors.black,
-                        surface: const Color(0xFF1E1E1E),
+                        surface: Color(0xFF1E1E1E),
                       ),
                     ),
                     child: child!,
