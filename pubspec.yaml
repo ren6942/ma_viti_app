@@ -1,0 +1,70 @@
+name: ma_viti_app
+description: "Application de gestion viticole"
+publish_to: 'none'
+version: 1.1.3+5
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  
+  # Base de données et fichiers
+  sqflite: ^2.3.0
+  path: ^1.9.0
+  path_provider: ^2.1.2
+  shared_preferences: ^2.2.2
+  file_picker: ^8.0.0
+  share_plus: ^10.1.0
+  image_picker: ^1.0.7
+ 
+  
+  # Cartographie et Géo
+  flutter_map: ^6.1.0 
+  latlong2: ^0.9.1
+  geolocator: ^13.0.0 
+  
+  # Outils et UI
+  csv: ^6.0.0
+  intl: any # On laisse Flutter choisir la version compatible avec ton SDK
+  http: ^1.1.0
+  slider_button: any # On laisse Flutter gérer la compatibilité interne
+  vibration: ^2.0.0 # Indispensable pour éviter l'erreur Java "Registrar"
+  
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon_tracteur.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#000000"
+  adaptive_icon_foreground: "assets/icon_tracteur.png"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icon_tracteur.png
+    - assets/icon_sulfatage.png
+    - assets/icon_rognage.png
+    - assets/icon_taille.png
+    - assets/icon_entretien.png
+    - assets/icon_vendange.png
+    - assets/icon_vert.png
+    - assets/icon_meteo_3d.png
+    - assets/icon_config_3d.png
+    - assets/icon_historique_3d.png
+
+# CETTE SECTION EST LA CLÉ : Elle force la version 2.0.0 
+# même si slider_button veut la 1.9.0
+dependency_overrides:
+  vibration: ^2.0.0
+  intl: ^0.20.2
