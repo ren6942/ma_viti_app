@@ -249,6 +249,7 @@ class _ParcellesPageState extends State<ParcellesPage> {
                 _showSnackBar("Le nom est obligatoire", Colors.orange);
                 return;
               }
+              final navigator = Navigator.of(ctx);
               try {
                 await _pService.insertParcelle(
                   nom,
@@ -256,8 +257,8 @@ class _ParcellesPageState extends State<ParcellesPage> {
                 );
                 nomCtrl.dispose();
                 surfaceCtrl.dispose();
-                if (mounted) Navigator.pop(ctx);
-                _chargerParcelles();
+                navigator.pop();
+                if (mounted) _chargerParcelles();
               } catch (e) {
                 _showSnackBar("Erreur : $e", Colors.red);
               }
@@ -307,7 +308,7 @@ class _ParcellesPageState extends State<ParcellesPage> {
                 title: const Text("Verrouiller surface",
                     style: TextStyle(color: Colors.white)),
                 value: isLocked,
-                activeColor: const Color(0xff76ff03),
+                activeThumbColor: const Color(0xff76ff03),
                 onChanged: (v) => setDialogState(() => isLocked = v),
               ),
             ],
@@ -326,6 +327,7 @@ class _ParcellesPageState extends State<ParcellesPage> {
                   _showSnackBar("Le nom est obligatoire", Colors.orange);
                   return;
                 }
+                final navigator = Navigator.of(ctx);
                 try {
                   // 1. Renommage + cascade en transaction atomique
                   await _pService.updateParcelleCascade(
@@ -343,8 +345,8 @@ class _ParcellesPageState extends State<ParcellesPage> {
                   );
                   nomCtrl.dispose();
                   surfaceCtrl.dispose();
-                  if (mounted) Navigator.pop(ctx);
-                  _chargerParcelles();
+                  navigator.pop();
+                  if (mounted) _chargerParcelles();
                 } catch (e) {
                   _showSnackBar("Erreur : $e", Colors.red);
                 }
@@ -376,17 +378,18 @@ class _ParcellesPageState extends State<ParcellesPage> {
           ),
           TextButton(
             onPressed: () async {
+              final navigator = Navigator.of(ctx);
               try {
                 await _pService.deleteParcelleCascade(
                     parcelle['id'], parcelle['nom']);
+                navigator.pop();
                 if (mounted) {
-                  Navigator.pop(ctx);
                   _chargerParcelles();
                   _showSnackBar("Parcelle supprimée", Colors.redAccent);
                 }
               } catch (e) {
+                navigator.pop();
                 if (mounted) {
-                  Navigator.pop(ctx);
                   _showSnackBar("Erreur suppression : $e", Colors.red);
                 }
               }

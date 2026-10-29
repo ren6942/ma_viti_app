@@ -55,8 +55,9 @@ class _CarteGlobalePageState extends State<CarteGlobalePage> {
       final List<Polygon> temporaire = [];
 
       for (var row in data) {
-        if (row['geometrie'] == null || row['geometrie'].toString().isEmpty)
+        if (row['geometrie'] == null || row['geometrie'].toString().isEmpty) {
           continue;
+        }
 
         final List<LatLng> points =
             DatabaseHelper.instance.stringToPoints(row['geometrie'] as String);
@@ -133,8 +134,9 @@ class _CarteGlobalePageState extends State<CarteGlobalePage> {
       final data = await DatabaseHelper.instance.getListeParcellesFull();
       final List<Polygon> temporaire = [];
       for (var row in data) {
-        if (row['geometrie'] == null || row['geometrie'].toString().isEmpty)
+        if (row['geometrie'] == null || row['geometrie'].toString().isEmpty) {
           continue;
+        }
         final List<LatLng> points =
             DatabaseHelper.instance.stringToPoints(row['geometrie'] as String);
         if (points.isNotEmpty) {

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'parcelle_service.dart';
 import 'travaux_service.dart';
@@ -146,7 +145,7 @@ class _VendangePageState extends State<VendangePage> {
                   )
                 : DropdownButtonFormField<String>(
                     dropdownColor: const Color(0xFF1E1E1E),
-                    value: _parcelleSelectionnee,
+                    initialValue: _parcelleSelectionnee,
                     items: _parcelles
                         .map((p) => DropdownMenuItem(
                               value: p,

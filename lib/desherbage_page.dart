@@ -41,7 +41,7 @@ class _DesherbagePageState extends State<DesherbagePage> {
     "Herbicide sélectif",
   ];
 
-  List<String> _parcellesSelectionnees = [];
+  final List<String> _parcellesSelectionnees = [];
   String _modeSelectionne = "Sous le rang";
 
   @override
@@ -111,16 +111,16 @@ class _DesherbagePageState extends State<DesherbagePage> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = const Color(0xff76ff03);
+    const primaryColor = Color(0xff76ff03);
     final int annee = DateTime.now().year;
 
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
         title: Text("DÉSHERBAGE ${widget.campagne}"),
-        actions: [
+        actions: const [
           Padding(
-            padding: const EdgeInsets.only(right: 16.0),
+            padding: EdgeInsets.only(right: 16.0),
             child: Icon(Icons.grass, color: primaryColor, size: 28),
           ),
         ],
@@ -171,7 +171,7 @@ class _DesherbagePageState extends State<DesherbagePage> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: _modeSelectionne,
+                initialValue: _modeSelectionne,
                 dropdownColor: const Color(0xFF1E1E1E),
                 style: const TextStyle(color: Colors.white),
                 decoration: _inputDecoration("Type de passage"),
@@ -202,7 +202,7 @@ class _DesherbagePageState extends State<DesherbagePage> {
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          value: _listeProduits[index].nom,
+                          initialValue: _listeProduits[index].nom,
                           dropdownColor: const Color(0xFF1E1E1E),
                           style: const TextStyle(color: Colors.white),
                           decoration: _inputDecoration("Produit"),
@@ -239,11 +239,13 @@ class _DesherbagePageState extends State<DesherbagePage> {
                           Icons.remove_circle,
                           color: _listeProduits.length > 1
                               ? Colors.red
-                              : Colors.red.withOpacity(0.3),
+                              : Colors.red.withValues(alpha: 0.3),
                         ),
                         onPressed: _listeProduits.length > 1
-                            ? () =>
-                                setState(() => _listeProduits.removeAt(index))
+                            ? () {
+                                _listeProduits[index].doseController.dispose();
+                                setState(() => _listeProduits.removeAt(index));
+                              }
                             : null,
                       ),
                     ],
@@ -265,7 +267,7 @@ class _DesherbagePageState extends State<DesherbagePage> {
                 tileColor: const Color(0xFF1E1E1E),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
-                leading: Icon(Icons.calendar_today, color: primaryColor),
+                leading: const Icon(Icons.calendar_today, color: primaryColor),
                 title: Text(
                   DateFormat('dd / MM / yyyy').format(_dateSelectionnee),
                   style: const TextStyle(color: Colors.white),
@@ -278,10 +280,10 @@ class _DesherbagePageState extends State<DesherbagePage> {
                     lastDate: DateTime(annee + 2),
                     builder: (context, child) => Theme(
                       data: Theme.of(context).copyWith(
-                        colorScheme: ColorScheme.dark(
-                          primary: const Color(0xff76ff03),
+                        colorScheme: const ColorScheme.dark(
+                          primary: Color(0xff76ff03),
                           onPrimary: Colors.black,
-                          surface: const Color(0xFF1E1E1E),
+                          surface: Color(0xFF1E1E1E),
                         ),
                       ),
                       child: child!,

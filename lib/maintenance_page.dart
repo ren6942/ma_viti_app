@@ -148,7 +148,7 @@ class _MaintenancePageState extends State<MaintenancePage> {
               const SizedBox(height: 10),
               DropdownButtonFormField<String>(
                 dropdownColor: const Color(0xFF1E1E1E),
-                value: selectedParcelle,
+                initialValue: selectedParcelle,
                 items: parcellesList
                     .map((p) => DropdownMenuItem(
                           value: p,
@@ -182,7 +182,7 @@ class _MaintenancePageState extends State<MaintenancePage> {
               const SizedBox(height: 10),
               DropdownButtonFormField<String>(
                 dropdownColor: const Color(0xFF1E1E1E),
-                value: typeCasse,
+                initialValue: typeCasse,
                 decoration: _inputDecoration("Type de casse"),
                 style: const TextStyle(color: Colors.white),
                 items: typesMaintenance
@@ -216,6 +216,8 @@ class _MaintenancePageState extends State<MaintenancePage> {
                   height: 60,
                   action: () async {
                     if (_formKey.currentState!.validate()) {
+                      final messenger = ScaffoldMessenger.of(context);
+                      final navigator = Navigator.of(context);
                       try {
                         String dateString =
                             DateFormat('yyyy-MM-dd').format(dateSignalement);
@@ -234,15 +236,13 @@ class _MaintenancePageState extends State<MaintenancePage> {
                           'commentaire': "",
                         });
 
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Signalement enregistré !"),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                          Navigator.pop(context);
-                        }
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text("Signalement enregistré !"),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                        navigator.pop();
                         return true;
                       } catch (e) {
                         _showError("Erreur : $e");
