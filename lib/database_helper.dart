@@ -7,10 +7,37 @@ import 'package:flutter/foundation.dart';
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;
+  static Future<Database>? _initFuture;
 
   DatabaseHelper._init();
 
-  Future<Database> get database async => _database ??= await _initDB('viti.db');
+  Future<Database> get database async {
+    if (_database != null && _database!.isOpen) {
+      return _database!;
+    }
+    _initFuture ??= _initDB('viti.db');
+    try {
+      _database = await _initFuture!;
+      return _database!;
+    } finally {
+      _initFuture = null;
+    }
+  }
+
+  /// Ferme proprement la base de données si elle est ouverte.
+  Future<void> close() async {
+    if (_initFuture != null) {
+      try {
+        await _initFuture;
+      } catch (_) {}
+    }
+    if (_database != null) {
+      if (_database!.isOpen) {
+        await _database!.close();
+      }
+      _database = null;
+    }
+  }
 
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
@@ -168,11 +195,12 @@ class DatabaseHelper {
   Future<void> importParcellesCSV(String csv) async {
     final db = await database;
     final List<String> lines = csv.replaceAll('\r', '').split('\n');
+    final batch = db.batch();
     for (int i = 1; i < lines.length; i++) {
       if (lines[i].trim().isEmpty) continue;
       final List<String> v = lines[i].split(';');
       if (v.length >= 3) {
-        await db.insert(
+        batch.insert(
           'parcelles',
           {
             'nom': v[1].trim(),
@@ -185,17 +213,19 @@ class DatabaseHelper {
         );
       }
     }
+    await batch.commit(noResult: true);
   }
 
   Future<void> importTailleCSV(String csv) async {
     final db = await database;
     final List<String> lines = csv.replaceAll('\r', '').split('\n');
+    final batch = db.batch();
     for (int i = 1; i < lines.length; i++) {
       if (lines[i].trim().isEmpty) continue;
       final List<String> v = lines[i].split(';');
       if (v.length >= 4) {
         final String dateVal = v[0].trim();
-        await db.insert(
+        batch.insert(
           'taille',
           {
             'date': dateVal,
@@ -208,11 +238,13 @@ class DatabaseHelper {
         );
       }
     }
+    await batch.commit(noResult: true);
   }
 
   Future<void> importMaintenanceCSV(String csv) async {
     final db = await database;
     final List<String> lines = csv.replaceAll('\r', '').split('\n');
+    final batch = db.batch();
 
     for (int i = 1; i < lines.length; i++) {
       if (lines[i].trim().isEmpty) continue;
@@ -221,7 +253,7 @@ class DatabaseHelper {
       // Format complet (9 colonnes) — export 2026+
       if (v.length >= 8) {
         final String dateVal = v[7].trim();
-        await db.insert(
+        batch.insert(
           'maintenance',
           {
             'campagne': v[0].trim(),
@@ -240,7 +272,7 @@ class DatabaseHelper {
       // Format ancien (4 colonnes) — compatibilité fichiers existants
       else if (v.length >= 4) {
         final String dateVal = v[0].trim();
-        await db.insert(
+        batch.insert(
           'maintenance',
           {
             'date': dateVal,
@@ -257,17 +289,19 @@ class DatabaseHelper {
         );
       }
     }
+    await batch.commit(noResult: true);
   }
 
   Future<void> importRognageCSV(String csv) async {
     final db = await database;
     final List<String> lines = csv.replaceAll('\r', '').split('\n');
+    final batch = db.batch();
     for (int i = 1; i < lines.length; i++) {
       if (lines[i].trim().isEmpty) continue;
       final List<String> v = lines[i].split(';');
       if (v.length >= 4) {
         final String dateVal = v[0].trim();
-        await db.insert(
+        batch.insert(
           'rognage',
           {
             'campagne': calculerCampagne(dateVal),
@@ -279,17 +313,19 @@ class DatabaseHelper {
         );
       }
     }
+    await batch.commit(noResult: true);
   }
 
   Future<void> importVendangeCSV(String csv) async {
     final db = await database;
     final List<String> lines = csv.replaceAll('\r', '').split('\n');
+    final batch = db.batch();
     for (int i = 1; i < lines.length; i++) {
       if (lines[i].trim().isEmpty) continue;
       final List<String> v = lines[i].split(';');
       if (v.length >= 4) {
         final String dateVal = v[0].trim();
-        await db.insert(
+        batch.insert(
           'vendange',
           {
             'campagne': calculerCampagne(dateVal),
@@ -302,17 +338,19 @@ class DatabaseHelper {
         );
       }
     }
+    await batch.commit(noResult: true);
   }
 
   Future<void> importTravauxVertsCSV(String csv) async {
     final db = await database;
     final List<String> lines = csv.replaceAll('\r', '').split('\n');
+    final batch = db.batch();
     for (int i = 1; i < lines.length; i++) {
       if (lines[i].trim().isEmpty) continue;
       final List<String> v = lines[i].split(';');
       if (v.length >= 4) {
         final String dateVal = v[0].trim();
-        await db.insert(
+        batch.insert(
           'travaux_verts',
           {
             'campagne': calculerCampagne(dateVal),
@@ -325,11 +363,13 @@ class DatabaseHelper {
         );
       }
     }
+    await batch.commit(noResult: true);
   }
 
   Future<void> importSulfatageCSV(String csv) async {
     final db = await database;
     final List<String> lines = csv.replaceAll('\r', '').split('\n');
+    final batch = db.batch();
 
     for (int i = 1; i < lines.length; i++) {
       if (lines[i].trim().isEmpty) continue;
@@ -338,7 +378,7 @@ class DatabaseHelper {
       try {
         // Format complet (8 colonnes) — export 2026+
         if (v.length >= 8) {
-          await db.insert(
+          batch.insert(
             'sulfatage',
             {
               'date': v[0].trim(),
@@ -361,7 +401,7 @@ class DatabaseHelper {
         // Format ancien (4 colonnes) — compatibilité
         else if (v.length >= 4) {
           final String dateVal = v[0].trim();
-          await db.insert(
+          batch.insert(
             'sulfatage',
             {
               'date': dateVal,
@@ -380,12 +420,15 @@ class DatabaseHelper {
         debugPrint("Erreur import sulfatage ligne $i : $e");
       }
     }
+    await batch.commit(noResult: true);
   }
 
   Future<void> importDesherbageCSV(String csv) async {
     final db = await database;
     final List<String> lines = csv.replaceAll('\r', '').split('\n');
     if (lines.isEmpty) return;
+
+    final batch = db.batch();
 
     // Détection du format via l'en-tête (insensible à la casse)
     final String header = lines[0].trim().toUpperCase();
@@ -462,7 +505,7 @@ class DatabaseHelper {
           continue;
         }
 
-        await db.insert(
+        batch.insert(
           'desherbage',
           {
             'campagne': calculerCampagne(dateVal),
@@ -490,7 +533,7 @@ class DatabaseHelper {
               ? (double.tryParse(v[4].trim().replaceAll(',', '.')) ?? 0.0)
               : 0.0;
 
-          await db.insert(
+          batch.insert(
             'desherbage',
             {
               'campagne': calculerCampagne(dateVal),
@@ -506,6 +549,7 @@ class DatabaseHelper {
         }
       }
     }
+    await batch.commit(noResult: true);
   }
 
   // --- EXPORT CSV ---
@@ -602,10 +646,7 @@ class DatabaseHelper {
   Future<void> reinitialiserBase() async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'viti.db');
-    if (_database != null) {
-      await _database!.close();
-      _database = null;
-    }
+    await close();
     await deleteDatabase(path);
     await database;
   }
