@@ -56,12 +56,13 @@ class CSVService {
       return;
     }
 
+    final batch = db.batch();
     for (int i = 1; i < rows.length; i++) {
       final row = rows[i];
       if (row.isEmpty || row.every((e) => e == null || e.toString().isEmpty)) {
         continue;
       }
-      await db.insert(
+      batch.insert(
         'parcelles',
         {
           'nom': row[1].toString().toUpperCase(),
@@ -73,6 +74,7 @@ class CSVService {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     }
+    await batch.commit(noResult: true);
   }
 
   // --- TRAVAUX (SULFATAGE, TAILLE, MAINTENANCE, etc.) ---
@@ -126,6 +128,7 @@ class CSVService {
 
     debugPrint("--- IMPORT DANS $tableName (${rows.length - 1} lignes) ---");
 
+    final batch = db.batch();
     for (int i = 1; i < rows.length; i++) {
       final row = rows[i];
 
@@ -162,16 +165,13 @@ class CSVService {
 
       debugPrint("Ligne $i : campagne=${rowData['campagne']} → $tableName");
 
-      try {
-        await db.insert(
-          tableName,
-          rowData,
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
-      } catch (e) {
-        debugPrint("Erreur SQL ligne $i dans '$tableName' : $e");
-      }
+      batch.insert(
+        tableName,
+        rowData,
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
     }
+    await batch.commit(noResult: true);
 
     debugPrint("--- IMPORTATION '$tableName' TERMINÉE ---");
   }
