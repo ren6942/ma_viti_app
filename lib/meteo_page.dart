@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'weather_service.dart';
 
-// Seuil vent modéré — Beaufort 5 (~20 km/h)
 const double _seuilVentAlerte = 20.0;
 
 class MeteoPage extends StatefulWidget {
@@ -22,7 +21,9 @@ class _MeteoPageState extends State<MeteoPage> {
   }
 
   void _rafraichir() {
-    setState(() => _futureMeteo = WeatherService.fetchWeather());
+    setState(() {
+      _futureMeteo = WeatherService.fetchWeather();
+    });
   }
 
   @override
@@ -43,7 +44,8 @@ class _MeteoPageState extends State<MeteoPage> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
-                child: CircularProgressIndicator(color: Color(0xff76ff03)));
+              child: CircularProgressIndicator(color: Color(0xff76ff03)),
+            );
           }
 
           if (snapshot.hasError) {
@@ -53,9 +55,11 @@ class _MeteoPageState extends State<MeteoPage> {
                 children: [
                   const Icon(Icons.cloud_off, size: 48, color: Colors.grey),
                   const SizedBox(height: 12),
-                  Text("Erreur : ${snapshot.error}",
-                      style: const TextStyle(color: Colors.grey),
-                      textAlign: TextAlign.center),
+                  Text(
+                    "Erreur : ${snapshot.error}",
+                    style: const TextStyle(color: Colors.grey),
+                    textAlign: TextAlign.center,
+                  ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                     onPressed: _rafraichir,
@@ -69,23 +73,24 @@ class _MeteoPageState extends State<MeteoPage> {
 
           if (!snapshot.hasData || snapshot.data == null) {
             return const Center(
-                child: Text("Aucune donnée disponible",
-                    style: TextStyle(color: Colors.grey)));
+              child: Text("Aucune donnée disponible",
+                  style: TextStyle(color: Colors.grey)),
+            );
           }
 
           final current = snapshot.data!['current'];
           final daily = snapshot.data!['daily'];
 
-          // Nombre réel de jours retournés par l'API, max 7
           final int nbJours =
               ((daily['time'] as List?)?.length ?? 0).clamp(0, 7);
-
           final double tempActuelle =
               (current['temperature_2m'] as num).toDouble();
+          final int weatherCodeActuel = current['weathercode'] != null
+              ? (current['weathercode'] as num).toInt()
+              : 0;
 
           return Column(
             children: [
-              // --- MÉTÉO ACTUELLE ---
               Container(
                 padding: const EdgeInsets.all(20),
                 margin: const EdgeInsets.all(15),
@@ -122,21 +127,28 @@ class _MeteoPageState extends State<MeteoPage> {
                           "${(current['relative_humidity_2m'] as num).toInt()}%",
                           "Humidité",
                         ),
-                        // Icône météo WMO si disponible
-                        if (current['weathercode'] != null)
-                          _infoActu(
-                            _iconeMeteo(
-                                (current['weathercode'] as num).toInt()),
-                            "",
-                            _libelleMeteo(
-                                (current['weathercode'] as num).toInt()),
-                          ),
+                        Column(
+                          children: [
+                            Image.asset(
+                              WeatherService.getWeatherIconAsset(
+                                  weatherCodeActuel.toString()),
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.contain,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _libelleMeteo(weatherCodeActuel),
+                              style: const TextStyle(
+                                  fontSize: 10, color: Colors.grey),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ],
                 ),
               ),
-
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Align(
@@ -148,13 +160,12 @@ class _MeteoPageState extends State<MeteoPage> {
                   ),
                 ),
               ),
-
-              // --- PRÉVISIONS 7 JOURS ---
               Expanded(
                 child: nbJours == 0
                     ? const Center(
                         child: Text("Aucune prévision disponible",
-                            style: TextStyle(color: Colors.grey)))
+                            style: TextStyle(color: Colors.grey)),
+                      )
                     : ListView.builder(
                         padding: const EdgeInsets.all(10),
                         itemCount: nbJours,
@@ -175,12 +186,32 @@ class _MeteoPageState extends State<MeteoPage> {
                               (daily['temperature_2m_min'][index] as num)
                                   .toDouble();
 
+                          final List? codesJourList =
+                              daily['weather_code'] ?? daily['weathercode'];
+                          final int codeJour = (codesJourList != null &&
+                                  codesJourList[index] != null)
+                              ? (codesJourList[index] as num).toInt()
+                              : 0;
+
                           return Card(
                             color: const Color(0xFF1E1E1E),
                             child: ListTile(
-                              leading: Text(jour,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold)),
+                              leading: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Image.asset(
+                                    WeatherService.getWeatherIconAsset(
+                                        codeJour.toString()),
+                                    width: 36,
+                                    height: 36,
+                                    fit: BoxFit.contain,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(jour,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                ],
+                              ),
                               title: Row(
                                 children: [
                                   Text(
@@ -247,7 +278,6 @@ class _MeteoPageState extends State<MeteoPage> {
     );
   }
 
-  // Couleur adaptative selon la température
   Color _couleurTemperature(double temp) {
     if (temp <= 5) return Colors.blue;
     if (temp <= 15) return Colors.lightBlue;
@@ -256,21 +286,6 @@ class _MeteoPageState extends State<MeteoPage> {
     return Colors.red;
   }
 
-  // Icône Material selon le code météo WMO
-  IconData _iconeMeteo(int code) {
-    if (code == 0) return Icons.wb_sunny;
-    if (code <= 2) return Icons.wb_cloudy;
-    if (code <= 3) return Icons.cloud;
-    if (code <= 49) return Icons.foggy;
-    if (code <= 59) return Icons.grain;
-    if (code <= 69) return Icons.ac_unit;
-    if (code <= 79) return Icons.snowing;
-    if (code <= 82) return Icons.umbrella;
-    if (code <= 99) return Icons.thunderstorm;
-    return Icons.cloud;
-  }
-
-  // Libellé court selon le code météo WMO
   String _libelleMeteo(int code) {
     if (code == 0) return "Clair";
     if (code <= 2) return "Peu nuageux";

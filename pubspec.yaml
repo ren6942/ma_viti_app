@@ -62,6 +62,7 @@ flutter:
     - assets/icon_meteo_3d.png
     - assets/icon_config_3d.png
     - assets/icon_historique_3d.png
+    - assets/weather/
 
 # CETTE SECTION EST LA CLÉ : Elle force la version 2.0.0 
 # même si slider_button veut la 1.9.0
